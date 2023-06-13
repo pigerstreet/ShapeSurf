@@ -1,0 +1,72 @@
+GraphicsWindow.Title = "Shape Surf"
+GraphicsWindow.Width = 800
+GraphicsWindow.Height = 600
+GraphicsWindow.BackgroundColor = "Black"
+
+Start_game = "false"
+
+'Title
+GraphicsWindow.FontName = "Arial"
+GraphicsWindow.FontSize = 40
+GraphicsWindow.BrushColor = "Red"
+GraphicsWindow.DrawText((GraphicsWindow.Width - 300) / 2, 100, "Shape Surf")
+
+' Instructions
+GraphicsWindow.BrushColor  = "#90EE90"
+GraphicsWindow.FontSize = 20
+GraphicsWindow.DrawText((GraphicsWindow.Width - 300) / 2, 200, "Controls:")
+GraphicsWindow.DrawText((GraphicsWindow.Width - 300) / 2, 240, "Press Space to jump")
+GraphicsWindow.DrawText((GraphicsWindow.Width - 300) / 2, 280, "Don't touch the triangles!")
+GraphicsWindow.DrawText((GraphicsWindow.Width - 300) / 2, 320, "Finish the level to win!")
+
+'Start text
+GraphicsWindow.FontSize = 30
+GraphicsWindow.BrushColor = "Green"
+GraphicsWindow.FillRectangle((GraphicsWindow.Width - 1000) , 400, 1000, 50)
+GraphicsWindow.BrushColor = "White"
+GraphicsWindow.DrawText((GraphicsWindow.Width - 400) / 2, 410, "Press any button to continue!")
+
+GraphicsWindow.KeyDown = keypressed
+GraphicsWindow.MouseDown = mousepressed
+
+Sub keypressed
+
+GraphicsWindow.Clear()
+  GraphicsWindow.BackgroundColor = "White"
+  Start_game = "true"
+  game()
+
+
+endsub
+
+Sub mousepressed
+
+GraphicsWindow.Clear()
+GraphicsWindow.BackgroundColor = "White"
+Start_game = "true"
+game()
+ 
+
+  EndSub
+
+
+
+Sub game
+  
+  While Start_game = "true"
+
+    player1x = 50
+    player1y = 50
+    
+    GraphicsWindow.BackgroundColor = "White"
+    GraphicsWindow.BrushColor = "red"
+    player1 = Shapes.AddRectangle(30, 30)
+    Shapes.Move(player1, player1x, player1y)
+    
+   
+
+    
+    EndWhile
+
+EndSub
+
