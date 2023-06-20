@@ -1,0 +1,121 @@
+GraphicsWindow.Title = "Shape Surf"
+GraphicsWindow.BackgroundColor = "Black"
+
+playerSize = 20
+playerX = 50
+playerY = GraphicsWindow.Height 
+gravity = 2
+jumpPower = 20
+score = 0
+speed = 10
+isJumping = "False"
+isGameOver = "False"
+
+CreatePlayer()  
+
+gapHeight = -100
+obstacleWidth = 40
+obstacleHeight = 100
+obstacleX = GraphicsWindow.Width
+obstacleY = GraphicsWindow.Height - obstacleHeight - gapHeight
+
+GraphicsWindow.KeyDown = OnKeyDown
+
+While 1=1
+    If isGameOver = "False" Then
+        MovePlayer()
+        MoveObstacle()
+        CheckCollision()
+        UpdateScore()
+        If playerY > GraphicsWindow.Height Then
+            GameOver()
+        EndIf
+    Else
+        RestartScreen()
+    EndIf
+    Program.Delay(20)
+EndWhile
+
+Sub CreatePlayer
+    GraphicsWindow.BrushColor = "White"
+    GraphicsWindow.FillRectangle(playerX, playerY, playerSize, playerSize)
+EndSub
+
+Sub MovePlayer
+    If isJumping Then
+        playerY = playerY - jumpPower
+        jumpPower = jumpPower - gravity
+        If playerY + playerSize >= GraphicsWindow.Height Then
+            isJumping = "False"
+            playerY = GraphicsWindow.Height - playerSize
+            jumpPower = 20
+        EndIf
+    EndIf
+    
+    GraphicsWindow.Clear()
+    CreatePlayer()
+EndSub
+
+Sub MoveObstacle
+    obstacleX = obstacleX - speed
+    If obstacleX + obstacleWidth < 0 Then
+        obstacleX = GraphicsWindow.Width
+        obstacleY = GraphicsWindow.Height - obstacleHeight - gapHeight
+        obstacleWidth = Math.GetRandomNumber(150)
+    EndIf
+    GraphicsWindow.BrushColor = "Red"
+    GraphicsWindow.FillTriangle(obstacleX, obstacleY, obstacleX + obstacleWidth / 2, obstacleY - obstacleHeight, obstacleX + obstacleWidth, obstacleY)
+EndSub
+
+Sub CheckCollision
+    If playerX + playerSize > obstacleX And playerX < obstacleX + obstacleWidth Then
+        If playerY + playerSize >= obstacleY And playerY <= obstacleY + obstacleHeight Then
+            isGameOver = "True"
+        EndIf
+    EndIf
+EndSub
+
+Sub UpdateScore
+    score = score + 1
+    GraphicsWindow.BrushColor = "Yellow"
+    GraphicsWindow.DrawText(20, 70, "Score: " + score)
+EndSub
+
+Sub GameOver
+    GraphicsWindow.Clear()
+    GraphicsWindow.BrushColor = "White"
+    GraphicsWindow.FontSize = 40
+    GraphicsWindow.DrawText(100, 200, "Game Over")
+    GraphicsWindow.FontSize = 20
+    GraphicsWindow.DrawText(100, 300, "Final Score: " + score)
+    isGameOver = "True"
+EndSub
+
+Sub OnKeyDown
+    If GraphicsWindow.LastKey = "Space" Then
+        If isGameOver = "True" Then
+      RestartScreen()
+        Else
+            isJumping = "True"
+        EndIf
+    EndIf
+EndSub
+
+Sub ResetGame
+  GraphicsWindow.FontSize = 20
+    playerY = GraphicsWindow.Height - playerSize
+    score = 0
+    isJumping = "False"
+    isGameOver = "False"
+    GraphicsWindow.Clear()
+    CreatePlayer()
+EndSub
+
+Sub RestartScreen
+    GraphicsWindow.Clear()
+    GraphicsWindow.BrushColor = "White"
+    GraphicsWindow.FontSize = 40
+    GraphicsWindow.DrawText(100, 200, "Press Space to Restart")
+    Program.Delay(10)
+    ResetGame()
+EndSub
