@@ -1,0 +1,94 @@
+GraphicsWindow.Title = "Shape Surf"
+GraphicsWindow.BackgroundColor = "Black"
+
+playerSize = 20
+playerX = 50
+playerY = GraphicsWindow.Height - playerSize
+gravity = 2
+jumpPower = 20
+score = 0
+speed = 10
+isJumping = "False"
+
+CreatePlayer()  
+
+gapHeight = -50
+obstacleWidth = 40
+obstacleHeight = 100
+obstacleX = GraphicsWindow.Width
+obstacleY = GraphicsWindow.Height - obstacleHeight - gapHeight
+
+GraphicsWindow.KeyDown = OnKeyDown
+
+While "True"
+    MovePlayer()
+    MoveObstacle()
+    CheckCollision()
+    UpdateScore()
+    Program.Delay(20)
+    If playerY > GraphicsWindow.Height Then
+        GameOver()
+    EndIf
+EndWhile
+
+Sub CreatePlayer
+    GraphicsWindow.BrushColor = "White"
+    GraphicsWindow.FillRectangle(playerX, playerY, playerSize, playerSize)
+EndSub
+
+Sub MovePlayer
+    If isJumping Then
+        playerY = playerY - jumpPower
+        jumpPower = jumpPower - gravity
+        If playerY + playerSize >= GraphicsWindow.Height Then
+            isJumping = "False"
+            playerY = GraphicsWindow.Height - playerSize
+            jumpPower = 20
+        EndIf
+    EndIf
+    
+    GraphicsWindow.Clear()
+    CreatePlayer()
+EndSub
+
+Sub MoveObstacle
+    obstacleX = obstacleX - speed
+    If obstacleX + obstacleWidth < 0 Then
+        obstacleX = GraphicsWindow.Width
+        obstacleY = GraphicsWindow.Height - obstacleHeight - gapHeight
+    EndIf
+    GraphicsWindow.BrushColor = "Red"
+    GraphicsWindow.FillRectangle(obstacleX, obstacleY, obstacleWidth, obstacleHeight)
+EndSub
+
+Sub CheckCollision
+    If playerX + playerSize > obstacleX And playerX < obstacleX + obstacleWidth Then
+        If playerY < obstacleY + obstacleHeight Or playerY + playerSize > obstacleY + obstacleHeight + gapHeight Then
+            GameOver()
+        EndIf
+    EndIf
+EndSub
+
+Sub UpdateScore
+
+score = score + 1
+GraphicsWindow.BrushColor = "yellow"
+         GraphicsWindow.DrawText(20, 70, "Score: " + score)
+   
+EndSub
+
+Sub GameOver
+    GraphicsWindow.Clear()
+    GraphicsWindow.BrushColor = "White"
+    GraphicsWindow.FontSize = 40
+    GraphicsWindow.DrawText(100, 200, "Game Over")
+    GraphicsWindow.FontSize = 20
+    GraphicsWindow.DrawText(100, 300, "Final Score: " + score)
+    Program.End()
+EndSub
+
+Sub OnKeyDown
+    If GraphicsWindow.LastKey = "Space" Then
+        isJumping = "True"
+    EndIf
+EndSub
