@@ -1,0 +1,293 @@
+' Set the window title with user's name and score
+GraphicsWindow.Title = "Shape Surf" + user + score
+startscreen=1
+
+If startscreen=1 then
+startscreen()
+endif
+
+Sub startscreen
+LDGraphicsWindow.State = 2
+
+
+gw = GraphicsWindow.Width
+gh = GraphicsWindow.Height
+
+' game loop
+GameS = 0
+
+' filename for highscore
+filename = Program.Directory + "\highScore.txt"
+
+
+GraphicsWindow.BrushColor = "Red"
+GraphicsWindow.FontSize = 20
+
+' username
+
+user = ""
+userBox = Controls.AddTextBox(50, 100)
+Controls.SetTextBoxText(userBox, "")
+Controls.SetSize(userBox, 200, 30)
+LDFocus.SetFocus(userBox)
+userTxt = Shapes.AddText("Enter your user name here")
+Shapes.Move(userTxt, 50, 50)
+userButton = Controls.AddButton("OK", 50, 150)
+Controls.ButtonClicked = OnButtonClicked
+
+' Wait for user input
+While (user = "")
+  Program.Delay(100)
+EndWhile
+
+' Remove user input controls after input received
+Shapes.Remove(userBox)
+Shapes.Remove(userButton)
+Shapes.Remove(userTxt)
+ 
+
+
+
+' Display game instructions and start button
+GraphicsWindow.DrawText(50, 50, "KEYS: Spacebar")
+GraphicsWindow.DrawText(50, 150, "Jump Over the Triangles and Try to Get a High Score!")
+
+userButton = Controls.AddButton("Start Game", 50, 210)
+Controls.ButtonClicked = OnButtonClicked1
+ok = 0
+
+' Wait for start button to be clicked
+While (ok = 0)
+  Program.Delay(100)
+EndWhile
+
+endsub
+
+'Start button lick
+Sub OnButtonClicked1
+  GraphicsWindow.Hide()
+  Program.Delay(50)
+  GraphicsWindow.Show()
+  ok = 1
+  startscreen=0
+  GameS = 1
+EndSub
+' Define a function to handle button click event for user input
+Sub OnButtonClicked
+  user = Controls.GetTextBoxText(userBox)
+EndSub
+
+
+' Load background image and play background music
+image = ImageList.LoadImage(Program.Directory+"background.jpg")
+LDGraphicsWindow.BackgroundImage(image)
+Sound.Play(Program.Directory+"StereoMadness.mp3")
+
+'window dimensions
+windowh = 400
+windoww = 400
+
+GraphicsWindow.Height = 400
+GraphicsWindow.Width = 400
+
+' Initialize player dimensions and other properties
+playerSize = 20
+playerX = 90
+playerY = 410
+gravity = 2
+speed = 20
+jumpPower = 20
+score = 0
+
+
+
+isJumping = "False"
+isGameOver = "False"
+
+' read highscore from file
+highScore = File.ReadContents(Program.Directory + "\highScore.txt")
+
+' player creation
+CreatePlayer()
+
+' obstacle properties
+gapHeight = -100
+obstacleWidth = 40
+obstacleHeight = 100
+obstacleX = 800
+obstacleY = 400 - obstacleHeight - gapHeight
+LDStopwatch.Add()
+' key down - keydow
+GraphicsWindow.KeyDown = OnKeyDown
+
+' ________________game loop_________________
+While GameS = 1
+  
+  LDGraphicsWindow.State = 0
+  GraphicsWindow.Height = 400
+  GraphicsWindow.Width = 800
+  
+  ' updates window name in real time
+  GraphicsWindow.Title = "Shape Surf" + " | Username: " + user + " | Score: " + score + " " + " | High Score: " + highScore 
+  
+  ' check if the game is over
+  If isGameOver = "False" Then
+    
+    SpeedUp()
+    MovePlayer()
+    MoveObstacle()
+    CheckCollision()  
+    UpdateScore()
+    If playerY > 400 Then
+      RestartScreen()
+    EndIf
+  Else
+    RestartScreen()
+  EndIf
+  
+  'delay to control the speed of the game
+  Program.Delay(20)
+EndWhile
+
+' player creation
+Sub CreatePlayer
+
+  GraphicsWindow.BrushColor = "White"
+  GraphicsWindow.FillRectangle(playerX, playerY, playerSize, playerSize)
+EndSub
+
+' character move
+Sub MovePlayer
+  If isJumping Then
+    playerY = playerY - jumpPower
+    jumpPower = jumpPower - gravity
+    If playerY + playerSize >= windowh Then
+      isJumping = "False"
+      playerY = 400 - playerSize
+      jumpPower = 20
+    EndIf
+  EndIf
+  
+  GraphicsWindow.Clear()
+  CreatePlayer()
+EndSub
+
+''obstacle move
+Sub MoveObstacle
+  obstacleX = obstacleX - speed
+  If obstacleX + obstacleWidth < 0 Then
+    obstacleX = 750 
+    obstacleY = 400 - obstacleHeight - gapHeight
+    obstacleWidth = Math.GetRandomNumber(150)
+  EndIf
+  GraphicsWindow.BrushColor = "Black"
+  GraphicsWindow.FillTriangle(obstacleX, obstacleY, obstacleX + obstacleWidth / 2, obstacleY - obstacleHeight, obstacleX + obstacleWidth, obstacleY)
+EndSub
+
+' Rectangle collision haha
+Sub CheckCollision
+  If playerX + playerSize > obstacleX And playerX < obstacleX + obstacleWidth Then
+    If playerY + playerSize >= obstacleY And playerY <= obstacleY + obstacleHeight Then
+      RestartScreen()
+   
+      speed = 20
+    EndIf
+  EndIf
+EndSub
+
+' update highscore and normal score
+Sub UpdateScore
+  score = score + 1
+  GraphicsWindow.BrushColor = "Yellow"
+  GraphicsWindow.DrawText(20, 70, "Score: " + Score)
+  GraphicsWindow.BrushColor = "Yellow"
+  GraphicsWindow.DrawText(20, 100, "High Score: " + highScore)
+  
+  If score > highScore Then
+    highScore = score
+    File.WriteContents(filename, highScore)
+  EndIf
+EndSub
+
+' broken code thats useless
+Sub OnKeyDown
+  If GraphicsWindow.LastKey = "Space" Then
+    If isGameOver = "True" Then
+      ResetGame()
+    Else
+      isJumping = "True"
+    EndIf
+  EndIf
+EndSub
+
+' reset game
+Sub ResetGame
+  playerY = windowh - playerSize
+  score = 0
+  isJumping = "False"
+  isGameOver = "False"
+  
+  Program.Delay(50)
+  CreatePlayer()
+  MovePlayer()
+  MoveObstacle()
+  CheckCollision()
+  UpdateScore()
+EndSub
+
+' broken restart screen
+Sub RestartScreen
+  GraphicsWindow.Clear()
+  Program.Delay(100)
+  'GraphicsWindow.BrushColor = "White"
+  'GraphicsWindow.FontSize = 25
+  'GraphicsWindow.DrawText(50, 200, "Press Space to Restart")
+  
+  playerY = windowh - playerSize
+  score = 0
+  isJumping = "False"
+  
+EndSub
+
+'speeds up the game as time goes on
+Sub SpeedUp
+  If score > 100 Then
+    speed = 21
+    endif
+  if score > 200 then
+    speed = speed+1
+    EndIf
+  if score > 300 then
+    speed = speed+1
+    endif
+  if score > 400 then
+    speed = speed+1
+    endif
+  if score > 500 then
+    speed = speed+1
+    endif
+    
+  if score > 600 then
+    speed = speed+1
+    endif
+  if score > 700 then
+    speed = speed+2
+    endif
+  if score > 800 then
+    speed = speed+2
+    endif
+  if score > 900 then
+    speed = speed+3
+    endif
+     if score > 1000 then
+       speed = 20+Math.GetRandomNumber(27)
+    
+    
+    EndIf
+  EndSub
+  
+  
+  If GraphicsWindow.LastKey = "R" Then
+    startscreen = 1
+    EndIf
+    
